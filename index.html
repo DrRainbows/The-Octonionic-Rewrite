@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>The Octonionic Rewrite</title>
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$','$']],
+    displayMath: [['$$','$$']],
+    processEscapes: true,
+    tags: 'ams'
+  },
+  options: {
+    skipHtmlTags: ['script','noscript','style','textarea','pre','code']
+  },
+  startup: { typeset: false }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<style>
+:root {
+  --bg: #fafaf8;
+  --text: #2d2d2d;
+  --text-light: #666;
+  --accent: #2c5282;
+  --border: #e0e0d8;
+  --sidebar-bg: #f4f3ee;
+  --sidebar-w: 300px;
+  --header-h: 52px;
+  --max-w: 780px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text)}
+
+/* HEADER */
+header{position:fixed;top:0;left:0;right:0;height:var(--header-h);display:flex;align-items:center;padding:0 1rem;background:#fff;border-bottom:1px solid var(--border);z-index:200}
+header .title{font-weight:700;font-size:1rem;letter-spacing:-0.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#menu-btn{display:none;background:none;border:none;font-size:1.4rem;cursor:pointer;padding:0.2rem 0.4rem;margin-right:0.7rem;color:var(--text);line-height:1}
+
+/* SIDEBAR */
+#sidebar{position:fixed;top:var(--header-h);left:0;bottom:0;width:var(--sidebar-w);overflow-y:auto;background:var(--sidebar-bg);border-right:1px solid var(--border);padding:0.8rem 0 2rem;z-index:150;transition:transform 0.25s ease}
+.nav-group{margin-bottom:0.15rem}
+.nav-part{font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-light);padding:0.65rem 1rem 0.3rem;cursor:pointer;user-select:none;display:flex;align-items:center;gap:0.3rem}
+.nav-part::before{content:'▾';display:inline-block;transition:transform 0.2s;font-size:0.6rem}
+.nav-group.collapsed .nav-part::before{transform:rotate(-90deg)}
+.nav-chapters{overflow:hidden}
+.nav-group.collapsed .nav-chapters{display:none}
+.nav-ch{display:block;padding:0.3rem 1rem 0.3rem 1.3rem;color:var(--text);text-decoration:none;font-size:0.86rem;line-height:1.4;border-left:3px solid transparent;transition:background 0.15s}
+.nav-ch:hover{background:rgba(0,0,0,0.04)}
+.nav-ch.active{color:var(--accent);font-weight:600;border-left-color:var(--accent);background:rgba(44,82,130,0.06)}
+
+/* SHADE */
+#shade{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:140}
+
+/* READER */
+#reader{margin-left:var(--sidebar-w);margin-top:var(--header-h);min-height:calc(100vh - var(--header-h))}
+#chapter{max-width:var(--max-w);margin:0 auto;padding:2rem 1.5rem 4rem;font-family:'Palatino Linotype',Palatino,'Book Antiqua',Georgia,'Times New Roman',serif;font-size:1.1rem;line-height:1.75;word-wrap:break-word}
+
+/* TYPOGRAPHY */
+#chapter h1{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:1.7rem;font-weight:700;color:#1a1a1a;margin:0 0 1.5rem;line-height:1.3}
+#chapter h2{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:1.3rem;font-weight:600;color:#1a1a1a;margin:2.5rem 0 1rem;padding-bottom:0.3rem;border-bottom:1px solid var(--border)}
+#chapter h3{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:1.1rem;font-weight:600;color:#1a1a1a;margin:1.8rem 0 0.7rem}
+#chapter h4{font-size:1rem;font-weight:600;margin:1.5rem 0 0.5rem}
+#chapter p{margin:0 0 1rem}
+#chapter a{color:var(--accent)}
+#chapter strong{font-weight:700}
+#chapter hr{border:none;border-top:1px solid var(--border);margin:2rem 0}
+#chapter ul,#chapter ol{margin:0 0 1rem 1.5rem}
+#chapter li{margin-bottom:0.35rem}
+#chapter blockquote{border-left:4px solid #ccc;padding:0.5rem 1rem;margin:1rem 0;color:#555;background:#fafafa;border-radius:0 3px 3px 0}
+#chapter img{max-width:100%;height:auto}
+
+/* TABLES */
+.table-wrap{overflow-x:auto;margin:1.2rem 0;-webkit-overflow-scrolling:touch}
+#chapter table{border-collapse:collapse;font-size:0.95rem;line-height:1.5;min-width:100%}
+#chapter th,#chapter td{border:1px solid #ddd;padding:0.45rem 0.7rem;text-align:left}
+#chapter th{background:#f5f4ef;font-weight:600;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:0.86rem}
+#chapter tr:nth-child(even) td{background:#fafaf6}
+
+/* CODE */
+#chapter pre{background:#f5f4ef;padding:1rem;overflow-x:auto;border-radius:4px;margin:1rem 0;font-size:0.88rem;line-height:1.5}
+#chapter code{font-family:'SF Mono','Fira Code','Fira Mono',Consolas,'Courier New',monospace;font-size:0.88em}
+#chapter :not(pre)>code{background:#f0efe8;padding:0.12em 0.3em;border-radius:3px}
+
+/* THEOREM ENVIRONMENTS */
+.thm-block,.lem-block,.prop-block,.cor-block{border-left:4px solid var(--accent);background:#f0f4f8;padding:0.85rem 1.2rem;margin:1.3rem 0;border-radius:0 3px 3px 0}
+.def-block{border-left:4px solid #2f855a;background:#f0faf0;padding:0.85rem 1.2rem;margin:1.3rem 0;border-radius:0 3px 3px 0}
+.proof-block{border-left:3px solid #aaa;padding:0.6rem 1.2rem;margin:1rem 0}
+.example-block{border-left:4px solid #c05621;background:#fffaf0;padding:0.85rem 1.2rem;margin:1.3rem 0;border-radius:0 3px 3px 0}
+.remark-block{border-left:4px solid #805ad5;background:#faf5ff;padding:0.85rem 1.2rem;margin:1.3rem 0;border-radius:0 3px 3px 0}
+.exercise-block{border-left:4px solid #e53e3e;background:#fff5f5;padding:0.85rem 1.2rem;margin:1.3rem 0;border-radius:0 3px 3px 0}
+
+/* MATH OVERFLOW */
+mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+mjx-container[jax="CHTML"][display="true"]{margin:0.8em 0;padding:0.3em 0}
+
+/* PAGER */
+#pager{display:flex;justify-content:space-between;max-width:var(--max-w);margin:0 auto;padding:1.5rem 1.5rem 3rem;border-top:1px solid var(--border)}
+.pager-btn{display:inline-block;padding:0.5rem 0;color:var(--accent);text-decoration:none;font-size:0.9rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:45%}
+.pager-btn:hover{text-decoration:underline}
+.pager-next{margin-left:auto;text-align:right}
+
+/* LOADING */
+.loading{text-align:center;padding:4rem 1rem;color:var(--text-light);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:0.95rem}
+.error{color:#c53030;text-align:center;padding:2rem}
+
+/* LANDING */
+.landing{text-align:center;padding:5rem 1.5rem 3rem}
+.landing h1{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:2rem;font-weight:700;color:#1a1a1a;margin-bottom:0.5rem;line-height:1.25}
+.landing .sub{color:var(--text-light);font-size:1.05rem;margin-bottom:0.3rem;font-style:italic}
+.landing .hint{color:#999;font-size:0.92rem;margin-top:2rem}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  #menu-btn{display:block}
+  #sidebar{transform:translateX(-100%);width:280px}
+  #sidebar.open{transform:translateX(0)}
+  #shade.visible{display:block}
+  #reader{margin-left:0}
+  #chapter{padding:1.5rem 1rem 3rem;font-size:1.05rem}
+  #chapter h1{font-size:1.4rem}
+  #chapter h2{font-size:1.15rem}
+  #pager{padding:1rem}
+}
+@media(max-width:480px){
+  #chapter{font-size:1rem;line-height:1.65}
+  #chapter h1{font-size:1.25rem}
+  .landing h1{font-size:1.5rem}
+}
+@media print{
+  header,#sidebar,#shade,#pager,#menu-btn{display:none!important}
+  #reader{margin-left:0}
+  #chapter{max-width:100%;padding:0;font-size:11pt}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <button id="menu-btn" aria-label="Toggle navigation">&#9776;</button>
+  <span class="title">The Octonionic Rewrite</span>
+</header>
+
+<div id="layout">
+  <nav id="sidebar"></nav>
+  <div id="shade"></div>
+  <main id="reader">
+    <article id="chapter"></article>
+    <nav id="pager"></nav>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+(function(){
+'use strict';
+
+/* ── Chapter Data ── */
+var CHAPTERS = [
+  ['outline','','Master Outline','book/MASTER_OUTLINE.md','Overview'],
+  ['preface','','Preface','book/PREFACE.md','Overview'],
+  ['ch01','1','Normed Division Algebras','book/part1-foundations/ch01-normed-division-algebras.md','Part I: Foundations'],
+  ['ch02','2','The Octonion Algebra','book/part1-foundations/ch02-octonion-algebra.md','Part I: Foundations'],
+  ['ch03','3','Alternativity','book/part1-foundations/ch03-alternativity.md','Part I: Foundations'],
+  ['ch04','4','The 7D Cross Product','book/part1-foundations/ch04-7d-cross-product.md','Part I: Foundations'],
+  ['ch05','5','G\u2082 Automorphisms','book/part1-foundations/ch05-g2-automorphisms.md','Part I: Foundations'],
+  ['ch06','6','COA Axiom System','book/part1-foundations/ch06-coa-axiom-system.md','Part I: Foundations'],
+  ['ch07','7','The Associator as Information','book/part1-foundations/ch07-associator-as-information.md','Part I: Foundations'],
+  ['ch08','8','Decompactified Killing Form','book/part1-foundations/ch08-decompactified-killing-form.md','Part I: Foundations'],
+  ['ch09','9','Extending PBW','book/part2-derivations/ch09-extending-pbw-to-non-associative-settings.md','Part II: Derivations'],
+  ['ch10','10','Universal Enveloping Algebras over \ud835\udd46','book/part2-derivations/ch10-universal-enveloping-algebras-over-O.md','Part II: Derivations'],
+  ['ch11','11','Octonionic Calculus','book/part2-derivations/ch11-octonionic-calculus.md','Part II: Derivations'],
+  ['ch12','12','Octonionic Differential Equations','book/part2-derivations/ch12-octonionic-differential-equations.md','Part II: Derivations'],
+  ['ch13','13','Spectral Theory','book/part2-derivations/ch13-spectral-theory-in-non-associative-algebras.md','Part II: Derivations'],
+  ['ch14','14','Measure-Theoretic Bases','book/part2-derivations/ch14-measure-theoretic-bases.md','Part II: Derivations'],
+  ['ch15','15','Recovering 3D as Projection','book/part2-derivations/ch15-recovering-3d-as-a-projection.md','Part II: Derivations'],
+  ['ch16','16','Noether Non-Associative','book/part3-conservation-laws/ch16-noether-non-associative.md','Part III: Conservation Laws'],
+  ['ch17','17','Broken Laws','book/part3-conservation-laws/ch17-broken-laws.md','Part III: Conservation Laws'],
+  ['ch18','18','Coherence Conservation','book/part3-conservation-laws/ch18-coherence-conservation.md','Part III: Conservation Laws'],
+  ['ch19','19','Contextual Charge','book/part3-conservation-laws/ch19-contextual-charge.md','Part III: Conservation Laws'],
+  ['ch20','20','Hierarchy Invariance','book/part3-conservation-laws/ch20-hierarchy-invariance.md','Part III: Conservation Laws'],
+  ['ch21','21','Thermodynamic Extensions','book/part3-conservation-laws/ch21-thermodynamic-extensions.md','Part III: Conservation Laws'],
+  ['ch22','22','COPBW Existence & Uniqueness','book/part4-proofs/ch22-copbw-existence-uniqueness.md','Part IV: Proofs'],
+  ['ch23','23','3D Recovery Theorem','book/part4-proofs/ch23-3d-recovery-theorem.md','Part IV: Proofs'],
+  ['ch24','24','G\u2082 Unification Theorem','book/part4-proofs/ch24-g2-unification-theorem.md','Part IV: Proofs'],
+  ['ch25','25','Associator Completeness','book/part4-proofs/ch25-associator-completeness.md','Part IV: Proofs'],
+  ['ch26','26','Non-Gameable Alignment','book/part4-proofs/ch26-non-gameable-alignment.md','Part IV: Proofs'],
+  ['ch27','27','Interderivability Theorem','book/part4-proofs/ch27-interderivability-theorem.md','Part IV: Proofs'],
+  ['ch28','28','Classical Mechanics in 7D','book/part5-applications/ch28-classical-mechanics-7d.md','Part V: Applications'],
+  ['ch29','29','Electromagnetism in 7D','book/part5-applications/ch29-electromagnetism-7d.md','Part V: Applications'],
+  ['ch30','30','Quantum Mechanics in 7D','book/part5-applications/ch30-quantum-mechanics-7d.md','Part V: Applications'],
+  ['ch31','31','General Relativity in 7D','book/part5-applications/ch31-general-relativity-7d.md','Part V: Applications'],
+  ['ch32','32','Fluid Dynamics in 7D','book/part5-applications/ch32-fluid-dynamics-7d.md','Part V: Applications'],
+  ['ch33','33','Unified Field Equations','book/part5-applications/ch33-unified-field-equations.md','Part V: Applications'],
+  ['ch34','34','Complex Systems Engineering','book/part5-applications/ch34-complex-systems-engineering.md','Part V: Applications'],
+  ['ch35','35','Political Systems','book/part5-applications/ch35-political-systems.md','Part V: Applications'],
+  ['ch36','36','Biological Systems','book/part5-applications/ch36-biological-systems.md','Part V: Applications'],
+  ['ch37','37','Economic Systems','book/part5-applications/ch37-economic-systems.md','Part V: Applications'],
+  ['ch38','38','Hierarchical Realism','book/part6-philosophy/ch38-hierarchical-realism.md','Part VI: Philosophy'],
+  ['ch39','39','Beyond Dualism','book/part6-philosophy/ch39-beyond-dualism.md','Part VI: Philosophy'],
+  ['ch40','40','Non-Associative Epistemology','book/part6-philosophy/ch40-non-associative-epistemology.md','Part VI: Philosophy'],
+  ['ch41','41','Ethics of Interderivability','book/part6-philosophy/ch41-ethics-of-interderivability.md','Part VI: Philosophy'],
+  ['ch42','42','Post-Symbolic Framework','book/part6-philosophy/ch42-post-symbolic-framework.md','Part VI: Philosophy'],
+  ['appA','A','Octonion Multiplication Table','book/appendices/appA-octonion-multiplication-table.md','Appendices'],
+  ['appB','B','G\u2082 Structure Constants','book/appendices/appB-g2-structure-constants.md','Appendices'],
+  ['appC','C','Computational Tools','book/appendices/appC-computational-tools.md','Appendices'],
+  ['appD','D','Glossary','book/appendices/appD-glossary.md','Appendices'],
+  ['appE','E','Comparison Table','book/appendices/appE-comparison-table.md','Appendices'],
+  ['appF','F','Open Problems','book/appendices/appF-open-problems.md','Appendices'],
+  ['appG','G','Quick-Start: Running the Code','book/appendices/appG-quick-start.md','Appendices'],
+  ['appH','H','Predictions Table','book/appendices/appH-predictions-table.md','Appendices'],
+  ['appI','I','Response to External Review','book/appendices/appI-rebuttal.md','Appendices'],
+  ['appJ','J','Literature Positioning','book/appendices/appJ-literature-positioning.md','Appendices']
+].map(function(a){return{id:a[0],num:a[1],title:a[2],file:a[3],part:a[4]}});
+
+/* ── State ── */
+var cache = {};
+var loadSeq = 0;
+
+/* ── Markdown + Math Rendering ── */
+marked.use({ gfm: true, breaks: false });
+
+var PFX = 'ZZMG_';
+
+function renderMd(md) {
+  var codeSaved = [], mathSaved = [];
+  var ci = 0, mi = 0;
+
+  // 1. Protect fenced code blocks from math regex
+  md = md.replace(/```[\s\S]*?```/g, function(m){ codeSaved.push(m); return PFX+'C'+(ci++)+'_'; });
+  // 2. Protect inline code
+  md = md.replace(/`[^`\n]+`/g, function(m){ codeSaved.push(m); return PFX+'C'+(ci++)+'_'; });
+
+  // 3. Protect display math ($$...$$)
+  md = md.replace(/\$\$([\s\S]*?)\$\$/g, function(m){ mathSaved.push(m); return PFX+'M'+(mi++)+'_'; });
+  // 4. Protect inline math ($...$)
+  md = md.replace(/\$([^\$\n]+?)\$/g, function(m){ mathSaved.push(m); return PFX+'M'+(mi++)+'_'; });
+
+  // 5. Restore code blocks (marked needs them)
+  for (var k = 0; k < codeSaved.length; k++) {
+    md = md.split(PFX+'C'+k+'_').join(codeSaved[k]);
+  }
+
+  // 6. Run marked
+  var html = marked.parse(md);
+
+  // 7. Restore math
+  for (var k = 0; k < mathSaved.length; k++) {
+    html = html.split(PFX+'M'+k+'_').join(mathSaved[k]);
+  }
+
+  // 8. Style theorem/definition environments
+  html = html.replace(/<p><strong>(Theorem\s)/g, '<p class="thm-block"><strong>$1');
+  html = html.replace(/<p><strong>(Lemma\s)/g, '<p class="lem-block"><strong>$1');
+  html = html.replace(/<p><strong>(Proposition\s)/g, '<p class="prop-block"><strong>$1');
+  html = html.replace(/<p><strong>(Corollary\s)/g, '<p class="cor-block"><strong>$1');
+  html = html.replace(/<p><strong>(Definition\s)/g, '<p class="def-block"><strong>$1');
+  html = html.replace(/<p><strong>(Example\s)/g, '<p class="example-block"><strong>$1');
+  html = html.replace(/<p><strong>(Remark\b)/g, '<p class="remark-block"><strong>$1');
+  html = html.replace(/<p><strong>(Exercise\s)/g, '<p class="exercise-block"><strong>$1');
+  html = html.replace(/<p><em>Proof/g, '<p class="proof-block"><em>Proof');
+
+  // 9. Wrap tables for responsive scroll
+  html = html.replace(/<table>/g, '<div class="table-wrap"><table>');
+  html = html.replace(/<\/table>/g, '</table></div>');
+
+  return html;
+}
+
+/* ── Build Sidebar ── */
+function buildSidebar() {
+  var groups = [], seen = {};
+  CHAPTERS.forEach(function(ch) {
+    if (!seen[ch.part]) { seen[ch.part] = []; groups.push(ch.part); }
+    seen[ch.part].push(ch);
+  });
+  var out = '';
+  groups.forEach(function(part) {
+    out += '<div class="nav-group">';
+    out += '<div class="nav-part" onclick="this.parentElement.classList.toggle(\'collapsed\')">' + part + '</div>';
+    out += '<div class="nav-chapters">';
+    seen[part].forEach(function(ch) {
+      var label = ch.num ? ch.num + '. ' + ch.title : ch.title;
+      out += '<a href="#' + ch.id + '" class="nav-ch" data-id="' + ch.id + '">' + label + '</a>';
+    });
+    out += '</div></div>';
+  });
+  document.getElementById('sidebar').innerHTML = out;
+}
+
+/* ── Navigation ── */
+function setActive(id) {
+  var links = document.querySelectorAll('.nav-ch');
+  for (var i = 0; i < links.length; i++) {
+    var a = links[i];
+    if (a.dataset.id === id) {
+      a.classList.add('active');
+      var grp = a.closest('.nav-group');
+      if (grp) grp.classList.remove('collapsed');
+      a.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    } else {
+      a.classList.remove('active');
+    }
+  }
+}
+
+function updatePager(ch) {
+  var idx = CHAPTERS.indexOf(ch);
+  var html = '';
+  if (idx > 0) {
+    var prev = CHAPTERS[idx - 1];
+    var pl = prev.num ? prev.num + '. ' + prev.title : prev.title;
+    html += '<a href="#' + prev.id + '" class="pager-btn pager-prev">\u2190 ' + pl + '</a>';
+  }
+  if (idx < CHAPTERS.length - 1) {
+    var next = CHAPTERS[idx + 1];
+    var nl = next.num ? next.num + '. ' + next.title : next.title;
+    html += '<a href="#' + next.id + '" class="pager-btn pager-next">' + nl + ' \u2192</a>';
+  }
+  document.getElementById('pager').innerHTML = html;
+}
+
+/* ── Chapter Loading ── */
+function showLanding() {
+  document.getElementById('chapter').innerHTML =
+    '<div class="landing">' +
+    '<h1>The Octonionic Rewrite</h1>' +
+    '<p class="sub">A Complete Mathematical Framework for Unified Systems</p>' +
+    '<p class="sub">Hierarchical Octonionic Rewrite &mdash; Division and Reunification of Algebras</p>' +
+    '<p class="hint">Select a chapter from the sidebar to begin reading.</p>' +
+    '</div>';
+  document.getElementById('pager').innerHTML = '';
+  setActive('');
+}
+
+async function loadChapter(ch) {
+  var mySeq = ++loadSeq;
+  var el = document.getElementById('chapter');
+  el.innerHTML = '<div class="loading">Loading\u2026</div>';
+  document.getElementById('pager').innerHTML = '';
+  closeSidebar();
+
+  try {
+    var html;
+    if (cache[ch.id]) {
+      html = cache[ch.id];
+    } else {
+      var resp = await fetch(ch.file);
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      var md = await resp.text();
+      html = renderMd(md);
+      cache[ch.id] = html;
+    }
+    if (mySeq !== loadSeq) return;
+    el.innerHTML = html;
+    setActive(ch.id);
+    updatePager(ch);
+    window.scrollTo(0, 0);
+
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetClear && MathJax.typesetClear([el]);
+      await MathJax.typesetPromise([el]);
+    }
+  } catch (err) {
+    if (mySeq !== loadSeq) return;
+    el.innerHTML = '<p class="error">Failed to load chapter: ' + err.message + '</p>';
+  }
+}
+
+/* ── Mobile sidebar ── */
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('shade').classList.add('visible');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('shade').classList.remove('visible');
+}
+
+/* ── Hash routing ── */
+function handleHash() {
+  var id = window.location.hash.slice(1);
+  if (!id) { showLanding(); return; }
+  var ch = null;
+  for (var i = 0; i < CHAPTERS.length; i++) {
+    if (CHAPTERS[i].id === id) { ch = CHAPTERS[i]; break; }
+  }
+  if (!ch) {
+    document.getElementById('chapter').innerHTML = '<p class="error">Chapter not found.</p>';
+    document.getElementById('pager').innerHTML = '';
+    return;
+  }
+  loadChapter(ch);
+}
+
+/* ── Init ── */
+buildSidebar();
+document.getElementById('menu-btn').addEventListener('click', function() {
+  if (document.getElementById('sidebar').classList.contains('open')) closeSidebar();
+  else openSidebar();
+});
+document.getElementById('shade').addEventListener('click', closeSidebar);
+document.getElementById('sidebar').addEventListener('click', function(e) {
+  if (e.target.classList.contains('nav-ch')) closeSidebar();
+});
+window.addEventListener('hashchange', handleHash);
+handleHash();
+
+})();
+</script>
+</body>
+</html>

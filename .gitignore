@@ -1,0 +1,8 @@
+.claude/
+.DS_Store
+*.swp
+*~
+.cursor/
+.venv/
+*.egg-info/
+__pycache__/
